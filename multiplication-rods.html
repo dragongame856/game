@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="zh-TW">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>乘法數棒卡</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+      width: 100%;
+      height: 100%;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      min-height: 100%;
+      padding: 32px 24px;
+      background: linear-gradient(135deg, #ffd4ec 0%, #ffe6f3 100%);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .title {
+      font-size: 48px;
+      font-weight: bold;
+      color: #ffffff;
+      margin: 0 0 16px 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      background-color: #2196F3;
+      padding: 16px 32px;
+      border-radius: 16px;
+      display: inline-block;
+    }
+
+    .main-content {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .left-panel {
+      flex: 0 0 280px;
+    }
+
+    .right-panel {
+      flex: 1;
+    }
+
+    .multiplication-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .mult-btn {
+      padding: 16px 20px;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+
+    .mult-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    .mult-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .mult-btn.active {
+      outline: 4px solid #ffd700;
+      outline-offset: 2px;
+    }
+
+    .mult-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    .card-display {
+      background: #E8E8E8;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+      min-height: 400px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .blocks-container {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .multiplication-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .blocks-grid {
+      display: flex;
+      gap: 6px;
+    }
+
+    .block {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      color: #ffffff;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    
+    .block[style*="#FFFFFF"] {
+      color: #333333;
+      border: 2px solid #CCCCCC;
+    }
+
+    .row-current {
+      animation: highlight 0.6s ease;
+    }
+
+    .row-current .block {
+      transform: scale(1.1);
+    }
+
+    @keyframes highlight {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .grid-info {
+      text-align: center;
+      color: #666;
+      font-size: 20px;
+      padding: 12px 20px;
+    }
+
+    .remaining {
+      font-size: 18px;
+      color: #999;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .answer-section {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .answer-equation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .answer-input {
+      width: 80px;
+      height: 50px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      border: 3px solid #666;
+      border-radius: 8px;
+      padding: 4px;
+      cursor: pointer;
+      background-color: #ffffff;
+      appearance: auto;
+    }
+
+    .answer-input:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .answer-input:disabled {
+      cursor: not-allowed;
+      background-color: #ffebee;
+    }
+
+    .check-answer-btn {
+      padding: 12px 32px;
+      font-size: 20px;
+      font-weight: bold;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .check-answer-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+      background-color: #45a049;
+    }
+
+    .check-answer-btn:active {
+      transform: translateY(0);
+    }
+
+    .feedback {
+      margin-top: 16px;
+      font-size: 24px;
+      font-weight: bold;
+      min-height: 32px;
+    }
+
+    .feedback.correct {
+      color: #4CAF50;
+    }
+
+    .feedback.incorrect {
+      color: #ff6b6b;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      padding: 16px 32px;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .draw-btn {
+      min-width: 200px;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    .control-btn:active {
+      transform: translateY(0);
+    }
+
+    .control-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .message {
+      text-align: center;
+      font-size: 20px;
+      color: #ffffff;
+      margin-top: 24px;
+      min-height: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .left-panel {
+        flex: 1;
+      }
+
+      .multiplication-buttons {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .title {
+        font-size: 36px;
+      }
+
+      .block {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+      }
+
+      .multiplication-row {
+        gap: 4px;
+      }
+
+      .blocks-grid {
+        gap: 4px;
+      }
+
+      .answer-input {
+        width: 60px;
+        height: 45px;
+        font-size: 20px;
+      }
+
+      .answer-equation {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .multiplication-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .mult-btn {
+        font-size: 18px;
+        padding: 12px;
+      }
+
+      .block {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+      }
+
+      .multiplication-row {
+        gap: 3px;
+        margin-bottom: 3px;
+      }
+
+      .blocks-grid {
+        gap: 3px;
+      }
+
+      .answer-input {
+        width: 50px;
+        height: 40px;
+        font-size: 18px;
+      }
+
+      .answer-equation {
+        font-size: 20px;
+        gap: 8px;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="app-wrapper">
+   <div class="container">
+    <div class="header">
+     <h1 class="title" id="title">乘法數棒卡</h1>
+    </div>
+    <div class="main-content">
+     <div class="left-panel">
+      <div class="multiplication-buttons" id="multButtons"></div>
+     </div>
+     <div class="right-panel">
+      <div class="card-display" id="cardDisplay">
+       <div class="grid-info">
+        請選擇左邊的乘法表，然後選擇出題方式
+       </div>
+      </div>
+     </div>
+    </div>
+    <div class="control-buttons"><button class="control-btn draw-btn" id="drawBtn" disabled> <span id="drawBtnText">抽牌</span> </button> <button class="control-btn" id="resetBtn"> <span id="resetBtnText">重置</span> </button>
+    </div>
+    <div class="message" id="message"></div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      title: "乘法數棒卡",
+      draw_button_text: "抽牌",
+      reset_button_text: "重置",
+      primary_color: "#ffd4ec",
+      secondary_color: "#ffffff",
+      text_color: "#333333",
+      button_color: "#4CAF50",
+      reset_button_color: "#ff6b6b",
+      font_family: "Microsoft JhengHei",
+      font_size: 16
+    };
+
+    let selectedMultipliers = new Set();
+    let mixedCards = [];
+    let isConfirmed = false;
+    let wrongAttempts = 0;
+    let currentCard = null;
+    let canDrawNext = false;
+    let correctCount = 0;
+    let totalAnswered = 0;
+
+    // 初始化
+    function initializeCards() {
+      mixedCards = [];
+      isConfirmed = false;
+    }
+
+    // 創建乘法按鈕
+    function createMultiplicationButtons() {
+      const container = document.getElementById('multButtons');
+      container.innerHTML = '';
+      
+      const colors = [
+        '#FFFFFF', '#E63946', '#90EE90', '#9B59B6', '#FFD700',
+        '#228B22', '#2C2C2C', '#8B4513', '#4169E1', '#FF8C00'
+      ];
+
+      for (let i = 1; i <= 10; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'mult-btn';
+        btn.textContent = `${i} 的乘法`;
+        btn.style.backgroundColor = colors[i - 1];
+        btn.style.color = (i === 1) ? '#333333' : '#ffffff';
+        btn.dataset.multiplier = i;
+        
+        btn.addEventListener('click', () => toggleMultiplier(i));
+        container.appendChild(btn);
+      }
+      
+      // 添加按順序出題���鈕
+      const sequentialBtn = document.createElement('button');
+      sequentialBtn.className = 'mult-btn';
+      sequentialBtn.id = 'sequentialBtn';
+      sequentialBtn.textContent = '按順序出題';
+      sequentialBtn.style.backgroundColor = '#2196F3';
+      sequentialBtn.style.color = '#ffffff';
+      sequentialBtn.style.gridColumn = '1 / -1';
+      sequentialBtn.addEventListener('click', () => confirmSelection('sequential'));
+      container.appendChild(sequentialBtn);
+      
+      // 添加隨機出題按鈕
+      const randomBtn = document.createElement('button');
+      randomBtn.className = 'mult-btn';
+      randomBtn.id = 'randomBtn';
+      randomBtn.textContent = '隨機出題';
+      randomBtn.style.backgroundColor = '#FF9800';
+      randomBtn.style.color = '#ffffff';
+      randomBtn.style.gridColumn = '1 / -1';
+      randomBtn.addEventListener('click', () => confirmSelection('random'));
+      container.appendChild(randomBtn);
+    }
+
+    // 切換乘法表選擇
+    function toggleMultiplier(multiplier) {
+      if (isConfirmed) return;
+      
+      if (selectedMultipliers.has(multiplier)) {
+        selectedMultipliers.delete(multiplier);
+      } else {
+        if (selectedMultipliers.size >= 10) {
+          document.getElementById('message').textContent = '最多只能選擇 10 個乘法表！';
+          setTimeout(() => {
+            document.getElementById('message').textContent = '';
+          }, 2000);
+          return;
+        }
+        selectedMultipliers.add(multiplier);
+      }
+      
+      // 更新按鈕狀態
+      document.querySelectorAll('.mult-btn').forEach(btn => {
+        const mult = parseInt(btn.dataset.multiplier);
+        if (mult && selectedMultipliers.has(mult)) {
+          btn.classList.add('active');
+        } else if (mult) {
+          btn.classList.remove('active');
+        }
+      });
+      
+      // 更新按順序按鈕的啟用狀態
+      const sequentialBtn = document.getElementById('sequentialBtn');
+      if (sequentialBtn) {
+        if (selectedMultipliers.size > 1) {
+          sequentialBtn.disabled = true;
+        } else {
+          sequentialBtn.disabled = false;
+        }
+      }
+      
+      updateDisplay();
+    }
+    
+    // 確認選擇
+    function confirmSelection(mode) {
+      if (selectedMultipliers.size === 0) {
+        document.getElementById('message').textContent = '請至少選擇一個乘法表！';
+        setTimeout(() => {
+          document.getElementById('message').textContent = '';
+        }, 2000);
+        return;
+      }
+      
+      // 如果選擇多個乘���表，但點了���順序，則提示���誤
+      if (mode === 'sequential' && selectedMultipliers.size > 1) {
+        document.getElementById('message').textContent = '選擇多個乘法表只能使用隨機出題！';
+        setTimeout(() => {
+          document.getElementById('message').textContent = '';
+        }, 2000);
+        return;
+      }
+      
+      isConfirmed = true;
+      
+      // 生成所有可能的題目
+      const allPossibleCards = [];
+      selectedMultipliers.forEach(multiplier => {
+        for (let i = 1; i <= 10; i++) {
+          allPossibleCards.push({ multiplier, number: i });
+        }
+      });
+      
+      // 根據模式����題目
+      if (mode === 'sequential') {
+        // 按順序：不打亂，直接取前10題
+        mixedCards = allPossibleCards.slice(0, 10);
+      } else {
+        // 隨機：先打亂再取前10題
+        for (let i = allPossibleCards.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allPossibleCards[i], allPossibleCards[j]] = [allPossibleCards[j], allPossibleCards[i]];
+        }
+        mixedCards = allPossibleCards.slice(0, 10);
+      }
+      
+      // 禁用所有按鈕
+      document.querySelectorAll('.mult-btn').forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+      });
+      
+      // 啟用抽牌按鈕
+      document.getElementById('drawBtn').disabled = false;
+      
+      const modeText = mode === 'sequential' ? '按順序' : '隨機';
+      updateDisplay();
+      document.getElementById('message').textContent = `已選擇 ${selectedMultipliers.size} 個乘法表，${modeText}出題，共 10 題！`;
+      setTimeout(() => {
+        document.getElementById('message').textContent = '';
+      }, 2000);
+    }
+
+    // 更新顯示
+    function updateDisplay(drawnCard = null) {
+      const display = document.getElementById('cardDisplay');
+      const message = document.getElementById('message');
+      
+      if (!isConfirmed) {
+        if (selectedMultipliers.size === 0) {
+          display.innerHTML = '<div class="grid-info">請選擇左邊的乘法表，然後選擇出題方式</div>';
+        } else if (selectedMultipliers.size === 1) {
+          display.innerHTML = `
+            <div class="grid-info">已選擇 ${selectedMultipliers.size} 個乘法表</div>
+            <div class="grid-info" style="font-size: 18px; margin-top: 20px;">請選擇「按順序出題」或「隨機出題」</div>
+          `;
+        } else {
+          display.innerHTML = `
+            <div class="grid-info">已選擇 ${selectedMultipliers.size} 個乘法表</div>
+            <div class="grid-info" style="font-size: 18px; margin-top: 20px;">請點擊「隨機出題」開始</div>
+          `;
+        }
+        message.textContent = '';
+        return;
+      }
+
+      const remaining = mixedCards.length;
+      const total = 10;
+      
+      if (drawnCard === null) {
+        display.innerHTML = `
+          <div class="grid-info">已準備 10 題</div>
+          <div class="grid-info" style="font-size: 18px; margin-top: 20px;">請點擊「抽牌」開始</div>
+          <div class="remaining">剩餘: ${remaining} / ${total} 題</div>
+        `;
+        message.textContent = '';
+        return;
+      }
+      
+      const colors = [
+        '#FFFFFF', '#E63946', '#90EE90', '#9B59B6', '#FFD700',
+        '#228B22', '#2C2C2C', '#8B4513', '#4169E1', '#FF8C00'
+      ];
+      const multiplier = drawnCard.multiplier;
+      const number = drawnCard.number;
+      const blockColor = colors[multiplier - 1];
+      const result = multiplier * number;
+      
+      let html = '<div class="blocks-container">';
+      
+      for (let row = 1; row <= number; row++) {
+        html += '<div class="multiplication-row row-current"><div class="blocks-grid">';
+        
+        for (let block = 1; block <= multiplier; block++) {
+          html += `<div class="block" style="background-color: ${blockColor};"></div>`;
+        }
+        
+        html += '</div></div>';
+      }
+      
+      html += '</div>';
+      
+      // 生成被乘數和乘數的下拉���項（1-10）
+      let options1to10 = '<option value="">?</option>';
+      for (let i = 1; i <= 10; i++) {
+        options1to10 += `<option value="${i}">${i}</option>`;
+      }
+      
+      // 生成積的下拉選項（1-100）
+      let options1to100 = '<option value="">?</option>';
+      for (let i = 1; i <= 100; i++) {
+        options1to100 += `<option value="${i}">${i}</option>`;
+      }
+      
+      html += `
+        <div class="answer-section">
+          <div class="answer-equation">
+            <span>(</span>
+            <select class="answer-input" id="answerInput1" data-answer="${multiplier}">
+              ${options1to10}
+            </select>
+            <span>)</span>
+            <span>×</span>
+            <span>(</span>
+            <select class="answer-input" id="answerInput2" data-answer="${number}">
+              ${options1to10}
+            </select>
+            <span>)</span>
+            <span>=</span>
+            <span>(</span>
+            <select class="answer-input" id="answerInput3" data-answer="${result}">
+              ${options1to100}
+            </select>
+            <span>)</span>
+          </div>
+          <button class="check-answer-btn" id="checkAnswerBtn">檢查答案</button>
+          <div class="feedback" id="feedback"></div>
+        </div>
+      `;
+      
+      html += `<div class="remaining">剩餘: ${remaining} / ${total} 題</div>`;
+      html += `<div class="remaining" style="color: #4CAF50; font-weight: bold; margin-top: 8px;">答對題數: ${correctCount} / ${totalAnswered}</div>`;
+      
+      display.innerHTML = html;
+      
+      const checkBtn = document.getElementById('checkAnswerBtn');
+      if (checkBtn) checkBtn.addEventListener('click', checkAnswer);
+      
+      const input1 = document.getElementById('answerInput1');
+      const input2 = document.getElementById('answerInput2');
+      const input3 = document.getElementById('answerInput3');
+      
+      if (remaining === 0) {
+        message.textContent = '已完成所有題目！點擊「重置」重新開始';
+        document.getElementById('drawBtn').disabled = true;
+      } else {
+        message.textContent = '';
+      }
+    }
+
+    // 檢查答案
+    function checkAnswer() {
+      const input1 = document.getElementById('answerInput1');
+      const input2 = document.getElementById('answerInput2');
+      const input3 = document.getElementById('answerInput3');
+      const feedback = document.getElementById('feedback');
+      const checkBtn = document.getElementById('checkAnswerBtn');
+      
+      if (!input1 || !input2 || !input3) return;
+      
+      const answer1 = input1.value;
+      const answer2 = input2.value;
+      const answer3 = input3.value;
+      
+      const correct1 = input1.dataset.answer;
+      const correct2 = input2.dataset.answer;
+      const correct3 = input3.dataset.answer;
+      
+      if (!answer1 || !answer2 || !answer3) {
+        feedback.textContent = '請填寫所有空格！';
+        feedback.className = 'feedback incorrect';
+        return;
+      }
+      
+      if (answer1 == correct1 && answer2 == correct2 && answer3 == correct3) {
+        const encouragements = [
+          '答對了！太棒了！🎉',
+          '答對了！你真聰明！⭐',
+          '答對了！繼續加油！👏',
+          '答對了！好厲害！🌟',
+          '答對了！真是數學高手！💯'
+        ];
+        const randomEncouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+        feedback.textContent = randomEncouragement;
+        feedback.className = 'feedback correct';
+        wrongAttempts = 0;
+        
+        // 禁用輸入和按鈕
+        input1.disabled = true;
+        input2.disabled = true;
+        input3.disabled = true;
+        if (checkBtn) {
+          checkBtn.disabled = true;
+          checkBtn.style.opacity = '0.5';
+        }
+        
+        // 記錄答對，��許��下一題
+        correctCount++;
+        totalAnswered++;
+        canDrawNext = true;
+        
+        // 立即更新答對題數顯示
+        const scoreDisplay = document.querySelector('.remaining[style*="4CAF50"]');
+        if (scoreDisplay) {
+          scoreDisplay.textContent = `答對題數: ${correctCount} / ${totalAnswered}`;
+        }
+        
+        if (mixedCards.length > 0) {
+          document.getElementById('message').textContent = '答對了！請點擊「抽牌」繼續下一題';
+        }
+      } else {
+        wrongAttempts++;
+        
+        if (wrongAttempts >= 3) {
+          // 答錯3次，顯示正�����答案並禁用輸入
+          feedback.textContent = `正確答案是：(${correct1}) × (${correct2}) = (${correct3})`;
+          feedback.className = 'feedback incorrect';
+          feedback.style.fontSize = '22px';
+          
+          input1.value = correct1;
+          input2.value = correct2;
+          input3.value = correct3;
+          input1.disabled = true;
+          input2.disabled = true;
+          input3.disabled = true;
+          input1.style.backgroundColor = '#ffebee';
+          input2.style.backgroundColor = '#ffebee';
+          input3.style.backgroundColor = '#ffebee';
+          
+          if (checkBtn) {
+            checkBtn.disabled = true;
+            checkBtn.style.opacity = '0.5';
+          }
+          
+          totalAnswered++;
+          canDrawNext = true;
+          
+          // 更新顯示答對題數
+          const scoreDisplay = document.querySelector('.remaining[style*="4CAF50"]');
+          if (scoreDisplay) {
+            scoreDisplay.textContent = `答對題數: ${correctCount} / ${totalAnswered}`;
+          }
+          
+          if (mixedCards.length > 0) {
+            document.getElementById('message').textContent = '請點擊「抽牌」繼續下一題';
+          } else {
+            document.getElementById('message').textContent = `���題完成��答�� ${correctCount} / ${totalAnswered} 題！點擊「重置」重新開始`;
+          }
+          wrongAttempts = 0;
+        } else {
+          feedback.textContent = `再試試看！加油！(${wrongAttempts}/3 次錯誤)`;
+          feedback.className = 'feedback incorrect';
+          
+          setTimeout(() => {
+            if (input1 && !input1.disabled) input1.selectedIndex = 0;
+            if (input2 && !input2.disabled) input2.selectedIndex = 0;
+            if (input3 && !input3.disabled) input3.selectedIndex = 0;
+            if (feedback) feedback.textContent = '';
+          }, 2000);
+        }
+      }
+    }
+    
+    function handleEnterKey(event) {
+      if (event.key === 'Enter') checkAnswer();
+    }
+
+    // 更新分數顯示
+    function updateScoreDisplay() {
+      const message = document.getElementById('message');
+      if (totalAnswered > 0 && mixedCards.length === 0) {
+        message.textContent = `答��完成！答對 ${correctCount} / ${totalAnswered} 題！點��「重置」重新開始`;
+      }
+    }
+
+    // 重置
+    function resetAll() {
+      initializeCards();
+      selectedMultipliers.clear();
+      wrongAttempts = 0;
+      currentCard = null;
+      correctCount = 0;
+      totalAnswered = 0;
+      canDrawNext = false;
+      
+      document.querySelectorAll('.mult-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      });
+      
+      document.getElementById('drawBtn').disabled = true;
+      updateDisplay();
+      updateScoreDisplay();
+      document.getElementById('message').textContent = '已重置，請重新選擇乘法表';
+      
+      setTimeout(() => {
+        document.getElementById('message').textContent = '';
+      }, 2000);
+    }
+
+    // 抽牌功能
+    function drawCard() {
+      if (!isConfirmed || mixedCards.length === 0) return;
+      
+      // 如果不是第一題，且還沒���題，不允許抽牌
+      if (currentCard !== null && !canDrawNext) {
+        document.getElementById('message').textContent = '請�����完成當前題目再抽下一題！';
+        setTimeout(() => {
+          document.getElementById('message').textContent = '';
+        }, 2000);
+        return;
+      }
+
+      // 從第一張開始抽（如果是�����順序模式）或隨機抽（如果是隨機模式）
+      const drawnCard = mixedCards.shift();
+      wrongAttempts = 0;
+      currentCard = drawnCard;
+      canDrawNext = false;
+      updateDisplay(drawnCard);
+
+      if (mixedCards.length === 0) {
+        document.getElementById('drawBtn').disabled = true;
+        document.getElementById('message').textContent = '已完成所有題目！';
+      } else {
+        document.getElementById('message').textContent = '';
+      }
+    }
+
+    // 事件監聽
+    document.getElementById('drawBtn').addEventListener('click', drawCard);
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+    // 初始������
+    initializeCards();
+    createMultiplicationButtons();
+
+    // Element SDK 設定
+    async function onConfigChange(config) {
+      const titleElement = document.getElementById('title');
+      const drawBtnText = document.getElementById('drawBtnText');
+      const resetBtnText = document.getElementById('resetBtnText');
+      const drawBtn = document.getElementById('drawBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const appWrapper = document.querySelector('.app-wrapper');
+
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontSize = config.font_size || defaultConfig.font_size;
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
+      const buttonColor = config.button_color || defaultConfig.button_color;
+      const resetButtonColor = config.reset_button_color || defaultConfig.reset_button_color;
+
+      titleElement.textContent = config.title || defaultConfig.title;
+      drawBtnText.textContent = config.draw_button_text || defaultConfig.draw_button_text;
+      resetBtnText.textContent = config.reset_button_text || defaultConfig.reset_button_text;
+
+      document.body.style.fontFamily = `${customFont}, 'Microsoft JhengHei', 'PingFang TC', sans-serif`;
+      titleElement.style.fontSize = `${baseFontSize * 3}px`;
+      
+      appWrapper.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%)`;
+      titleElement.style.color = secondaryColor;
+      drawBtn.style.backgroundColor = buttonColor;
+      drawBtn.style.color = secondaryColor;
+      resetBtn.style.backgroundColor = resetButtonColor;
+      resetBtn.style.color = secondaryColor;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.primary_color || defaultConfig.primary_color,
+              set: (value) => {
+                config.primary_color = value;
+                window.elementSdk.setConfig({ primary_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_color || defaultConfig.secondary_color,
+              set: (value) => {
+                config.secondary_color = value;
+                window.elementSdk.setConfig({ secondary_color: value });
+              }
+            },
+            {
+              get: () => config.button_color || defaultConfig.button_color,
+              set: (value) => {
+                config.button_color = value;
+                window.elementSdk.setConfig({ button_color: value });
+              }
+            },
+            {
+              get: () => config.reset_button_color || defaultConfig.reset_button_color,
+              set: (value) => {
+                config.reset_button_color = value;
+                window.elementSdk.setConfig({ reset_button_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["title", config.title || defaultConfig.title],
+          ["draw_button_text", config.draw_button_text || defaultConfig.draw_button_text],
+          ["reset_button_text", config.reset_button_text || defaultConfig.reset_button_text]
+        ])
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a9af16be486a9c2',t:'MTc2NTAxNTI5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
