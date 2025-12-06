@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的遊戲選單</title>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f4f8; /* 淺藍灰色背景 */
+            color: #2d3748;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #5568d3;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+        }
+
+        a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #ffffff;
+            background-color: #667eea; /* 主按鈕顏色 */
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        a:hover {
+            background-color: #5568d3; /* 滑鼠移上時的顏色 */
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 遊戲選單</h1>
+
+        <ul>
+            <li>
+                <a href="logic-puzzle.html">🧩 邏輯拼圖</a>
+            </li>
+            <li>
+                <a href="multiplication-rods.html">🔢 乘法數棒</a>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
